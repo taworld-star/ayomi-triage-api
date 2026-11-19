@@ -146,8 +146,19 @@ async def lifespan(app):
 app = FastAPI(title="Ayomi Incident Triage", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 
+UNAUTHORIZED = {"code": "unauthorized", "error": "Token API tidak valid."}
+
+
+def token_valid(header):
+    return hmac.compare_digest((header or "").encode("utf-8", "replace"), app.state.token)
+
+
 @app.middleware("http")
-async def limit_body(request: Request, call_next):
+async def guard(request: Request, call_next):
+    # Token diperiksa sebelum isi permintaan dibaca atau divalidasi, jadi permintaan
+    # tanpa token selalu mendapat 401 dan tidak pernah melihat pesan validasi.
+    if request.url.path == "/triage" and not token_valid(request.headers.get("authorization")):
+        return JSONResponse(status_code=401, content={"detail": UNAUTHORIZED})
     length = request.headers.get("content-length")
     if length and (not length.isdigit() or int(length) > MAX_BODY):
         return JSONResponse(status_code=413, content={"detail": {"code": "input_too_large", "error": "Input maksimal 64 KB."}})
@@ -155,8 +166,8 @@ async def limit_body(request: Request, call_next):
 
 
 def authorize(header):
-    if not hmac.compare_digest((header or "").encode("utf-8", "replace"), app.state.token):
-        raise HTTPException(status_code=401, detail={"code": "unauthorized", "error": "Token API tidak valid."})
+    if not token_valid(header):
+        raise HTTPException(status_code=401, detail=UNAUTHORIZED)
 
 
 @app.get("/health")

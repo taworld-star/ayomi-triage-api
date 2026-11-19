@@ -27,6 +27,11 @@ def test_requires_token(client):
     inp = make_input("[ANAK] jatuh di halaman dan lututnya lecet.")
     assert client.post("/triage", json=inp).status_code == 401
     assert client.post("/triage", json=inp, headers={"Authorization": "Bearer salah"}).status_code == 401
+    # Tanpa token, isi yang salah atau terlalu besar tetap 401 dan tidak membocorkan pesan validasi.
+    res = client.post("/triage", json={"x": 1})
+    assert res.status_code == 401 and "loc" not in res.text
+    assert client.post("/triage", content=b"{bukan json").status_code == 401
+    assert client.post("/triage", json={**inp, "description": "a" * 70_000}).status_code == 401
 
 
 def test_rejects_unknown_field_and_large_body(client, auth):
