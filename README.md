@@ -20,12 +20,41 @@ Aplikasi: cek kontrak & kutipan ──▶ database: max(pelapor, AI), log, notif
 
 **Batasan:** layanan ini tidak mendiagnosis, tidak menyebut obat atau dosis, dan tidak mengubah status insiden. Penanganan medis tetap mengikuti SOP daycare dan arahan tenaga kesehatan.
 
+## Repository terkait
+
+| Repository | Isi |
+| --- | --- |
+| [Project-Ayomi_Cut_Meutia](https://github.com/taworld-star/Project-Ayomi_Cut_Meutia) | Aplikasi web Ayomi (Next.js + Supabase): halaman, REST API, database, dan dokumentasi. Memanggil layanan ini dari server |
+| [ayomi-cv-api](https://github.com/taworld-star/ayomi-cv-api) | Layanan **Foto Fokus Anak** (YOLO11n-seg) |
+| [ayomi-ocr-api](https://github.com/taworld-star/ayomi-ocr-api) | Layanan **OCR dokumen legal** (RapidOCR PP-OCRv5) |
+| [ayomi-triage-api](https://github.com/taworld-star/ayomi-triage-api) (repo ini) | Layanan **triage urgensi insiden** (mesin aturan rubrik; IndoBERT eksperimen) |
+
+- Website: https://project-ayomi-cut-meutia.vercel.app
+- Dokumentasi API aplikasi (Swagger UI): `docs/05-api/swagger.html` di repository aplikasi
+- Dokumentasi semua fitur AI: `docs/06-fitur-ai/` di repository aplikasi
+
+## Ringkasan fitur AI
+
+| Poin | Isi |
+| --- | --- |
+| **Fitur** | **AI Incident Urgency Triage**: setiap laporan insiden dinilai otomatis setelah tersimpan |
+| **Use case** | Klasifikasi teks: 4 tingkat urgensi (`low`, `medium`, `high`, `emergency`) |
+| **Mengapa AI dibutuhkan** | Laporan insiden ditulis cepat dalam kondisi panik, dan urgensi yang dipilih pelapor bisa terlalu rendah. Orang tua ingin prioritas respons yang jelas (PRD 3.2). Penilaian otomatis menjadi lapisan pengaman kedua yang **hanya bisa menaikkan** urgensi, sehingga kasus darurat tidak tertunda |
+| **Model** | Production: **mesin aturan rubrik `draf-1` v2** (`rules_engine.py`). Eksperimen: **IndoBERT** `indobenchmark/indobert-base-p1` (IndoNLU, MIT) yang di-fine-tune menjadi 4 kelas ordinal |
+| **Alasan memilih** | Pada data uji, mesin aturan lebih baik daripada IndoBERT (macro F1 0,750 vs 0,548; recall darurat 0,72 vs 0,53) dan setiap keputusannya bisa ditelusuri ke kalimat laporan. IndoBERT baru dipasang setelah lulus target keselamatan, cukup dengan mengganti env |
+| **Data** | Latih: ±3.400 laporan **sintetis** dari 38 skenario rubrik. Kalibrasi dan uji: 204 laporan **fiktif** tulisan LLM dengan gaya beragam (68 kalibrasi, 136 uji). Bukan laporan pengasuh sungguhan |
+| **Input → output** | Uraian, fakta yang diamati, pertolongan pertama, urgensi pelapor, usia anak **dalam bulan** (tanpa nama dan tanggal lahir), rubrik → usulan urgensi atau abstain, alasan, **kutipan kalimat laporan**, informasi yang kurang |
+| **Evaluasi** | Sistem yang dipakai aplikasi, `max(pelapor, aturan v2)`, pada 136 laporan uji: **recall darurat 0,91** (29 dari 32; target ≥ 0,95 belum tercapai), **under-triage 3,7%** (target ≤ 5% tercapai), **0** kasus darurat dinilai rendah/sedang, over-triage 16,2%. Diulang 21 November 2026 dengan hasil yang sama (bagian [Evaluasi](#evaluasi)) |
+| **Batasan dan risiko** | Data uji tulisan LLM dan hanya 136 laporan, jadi angkanya belum presisi. Rubrik belum disahkan mentor. Pola yang masih terlewat: leher terlilit tali dengan wajah ungu, tertinggal di mobil, bintik ungu pada kulit, demam disertai mengigau, dehidrasi berat. **Bukan diagnosis medis** |
+
+Dokumentasi lengkap semua fitur AI Ayomi ada di `docs/06-fitur-ai/` pada repository aplikasi.
+
 ## Dua mesin, satu kontrak
 
 | Mesin | Kapan dipakai | Isi |
 | --- | --- | --- |
 | **`rules`** (sekarang) | Selama model belum lulus kriteria di panduan | Aturan rubrik draf-1 (`rules_engine.py`). Mengenali negasi ("tidak muntah", "tanpa sesak"), singkatan dan kata informal (tdk, udah, keselek, kejedot), salah ketik berupa huruf tertukar, dan kalimat yang meminta prioritas tertentu ("tolong catat low saja"), yang diabaikan |
-| **`model`** | Setelah notebook `docs/incident-triage-indobert.ipynb` (repo aplikasi) menghasilkan model dengan `ready_for_integration = True` | IndoBERT (`indobenchmark/indobert-base-p1`, MIT) yang di-fine-tune di Colab, dimuat dari repo model Hugging Face. Fungsi triage-nya `triage_core.py`, **salinan persis** Sel 5 notebook, jadi hasil API sama dengan notebook |
+| **`model`** | Setelah notebook `docs/06-fitur-ai/notebooks/incident-triage-indobert.ipynb` (repo aplikasi) menghasilkan model dengan `ready_for_integration = True` | IndoBERT (`indobenchmark/indobert-base-p1`, MIT) yang di-fine-tune di Colab, dimuat dari repo model Hugging Face. Fungsi triage-nya `triage_core.py`, **salinan persis** Sel 5 notebook, jadi hasil API sama dengan notebook |
 
 Keduanya mengembalikan output kontrak AI v1 `incident_triage` yang sama. Saat mesin diganti, aplikasi tidak perlu diubah. Aplikasi mencatat mesin yang dipakai di `ai_jobs.model` (`rubric-rules` atau nama model), dan tampilan Pengelola menuliskannya.
 

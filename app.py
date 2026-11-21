@@ -4,7 +4,7 @@ POST /triage  input kontrak AI v1 `incident_triage` -> {result, meta}
 GET  /health  status dan mesin yang aktif
 
 Dua mesin dengan keluaran kontrak yang sama:
-- "model": IndoBERT hasil fine-tune notebook docs/incident-triage-indobert.ipynb,
+- "model": IndoBERT hasil fine-tune notebook docs/06-fitur-ai/notebooks/incident-triage-indobert.ipynb,
   dimuat dari repo model Hugging Face (MODEL_REPO) atau folder lokal (MODEL_DIR).
   Fungsi triage-nya adalah triage_core.py, salinan persis Sel 5 notebook.
 - "rules": aturan rubrik draf-1 (rules_engine.py), dipakai selama model belum

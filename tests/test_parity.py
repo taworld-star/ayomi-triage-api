@@ -1,6 +1,6 @@
 """triage_core.py dan bank skenario harus sama persis dengan notebook di repo aplikasi.
 
-Lokasi notebook: env AYOMI_NOTEBOOK, atau ../ayomi-project-cut-meutia/docs/incident-triage-indobert.ipynb.
+Lokasi notebook: env AYOMI_NOTEBOOK, atau ../ayomi-project-cut-meutia/docs/06-fitur-ai/notebooks/incident-triage-indobert.ipynb.
 Dilewati bila notebook tidak ada (misalnya saat build Docker).
 """
 import json
@@ -12,7 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 NOTEBOOK = Path(os.environ.get("AYOMI_NOTEBOOK",
-                               ROOT.parent / "ayomi-project-cut-meutia" / "docs" / "incident-triage-indobert.ipynb"))
+                               ROOT.parent / "ayomi-project-cut-meutia" / "docs" / "06-fitur-ai" / "notebooks" / "incident-triage-indobert.ipynb"))
 
 
 def cells():
