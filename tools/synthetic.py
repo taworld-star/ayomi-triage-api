@@ -1,7 +1,7 @@
 """Laporan insiden sintetis dari bank skenario rubrik draf-1.
 
 Blok di antara penanda di bawah adalah SALINAN PERSIS Sel 6 notebook
-docs/incident-triage-indobert.ipynb (repo aplikasi). tests/test_parity.py
+docs/06-fitur-ai/notebooks/incident-triage-indobert.ipynb (repo aplikasi). tests/test_parity.py
 memeriksa kesamaannya. Ubah skenario di notebook, lalu salin ulang ke sini.
 
 Dipakai untuk mengevaluasi mesin aturan dan layanan yang sudah di-deploy

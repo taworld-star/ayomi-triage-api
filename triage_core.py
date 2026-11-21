@@ -1,5 +1,5 @@
 # Inti triage IndoBERT: SALINAN PERSIS TRIAGE_CORE dari Sel 5 notebook
-# docs/incident-triage-indobert.ipynb (repo aplikasi Ayomi). Jangan diubah di sini;
+# docs/06-fitur-ai/notebooks/incident-triage-indobert.ipynb (repo aplikasi Ayomi). Jangan diubah di sini;
 # ubah di notebook lalu salin ulang. tests/test_parity.py memeriksa kesamaannya.
 import re
 import numpy as np
